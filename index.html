@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moloud Nasiri, Human-Centered Computing</title>
+<meta name="description" content="Moloud Nasiri, Ph.D. Research on VR locomotion and navigation, mixed reality interaction, and how large language models reason.">
+<meta name="theme-color" content="#F2F4F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1324" media="(prefers-color-scheme: dark)">
+<meta property="og:title" content="Moloud Nasiri, Human-Centered Computing">
+<meta property="og:description" content="Research on VR locomotion and navigation, mixed reality interaction, and how large language models reason.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232740D6'/%3E%3Ccircle cx='16' cy='16' r='5' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap">
+<style>
+  :root{
+    color-scheme:light dark;
+    --bg:#F2F4F8; --surface:#FFFFFF; --ink:#151A2D; --muted:#4F5870; --line:#CFD5E3;
+    --accent:#2740D6; --accent-fg:#FFFFFF; --waypoint:#C21E63;
+    --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+    --text:"Newsreader","Iowan Old Style",Georgia,serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#0F1324;--surface:#171C33;--ink:#E9ECF6;--muted:#A0A9C4;--line:#2C3354;--accent:#9CAEFF;--accent-fg:#0F1324;--waypoint:#FF7BAE}
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--text);font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+  a:hover{text-decoration-thickness:2px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+  .skip{position:absolute;left:12px;top:-60px;background:var(--accent);color:var(--accent-fg);padding:8px 14px;border-radius:6px;font-family:var(--display);z-index:20}
+  .skip:focus{top:12px}
+
+  .layout{max-width:1120px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:240px minmax(0,1fr);column-gap:80px}
+  .rail{position:sticky;top:0;align-self:start;padding:56px 0 40px;font-family:var(--display)}
+  .name{font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.02em;margin:0 0 10px}
+  .role{font-size:15px;line-height:1.45;color:var(--muted);margin:0 0 32px;font-weight:450}
+  .rail nav ul{list-style:none;margin:0 0 32px;padding:0}
+  .rail nav a{display:block;padding:5px 0 5px 14px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none;font-size:15px;font-weight:500}
+  .rail nav a:hover{color:var(--ink)}
+  .rail nav a[aria-current]{border-left-color:var(--accent);color:var(--ink)}
+  .contact{list-style:none;margin:0;padding:0;font-size:15px;font-weight:500}
+  .contact li{margin-bottom:4px}
+
+  main{padding:56px 0 40px;min-width:0}
+  .lead{font-family:var(--display);font-size:clamp(27px,3.6vw,38px);line-height:1.16;font-weight:550;letter-spacing:-.022em;margin:0 0 20px;max-width:26ch}
+  .intro p{max-width:62ch;margin:0 0 14px;color:var(--ink)}
+
+  /* locomotion demo: the page's one memorable element */
+  .demo{margin:40px 0 0}
+  .seg-group{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);margin-bottom:12px}
+  .seg{font:500 14px/1 var(--display);padding:12px 18px;min-height:40px;border:0;background:transparent;color:var(--muted);cursor:pointer}
+  .seg + .seg{border-left:1px solid var(--line)}
+  .seg:hover{color:var(--ink)}
+  .seg[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+  .seg:focus-visible{outline-offset:-3px}
+  #loco{display:block;width:100%;aspect-ratio:16/7;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+  .demo figcaption{font-size:16px;line-height:1.55;color:var(--muted);max-width:62ch;margin-top:12px}
+
+  section{margin-top:72px;padding-top:40px;border-top:1px solid var(--line);scroll-margin-top:16px}
+  .intro{margin:0;padding:0;border:0}
+  h2{font-family:var(--display);font-size:30px;line-height:1.15;font-weight:650;letter-spacing:-.02em;margin:0 0 28px}
+  h3{font-family:var(--display);font-size:20px;line-height:1.3;font-weight:600;letter-spacing:-.01em;margin:0 0 4px}
+  .sub{font-family:var(--display);font-size:17px;font-weight:600;color:var(--muted);margin:40px 0 16px}
+  .sub:first-of-type{margin-top:0}
+  .meta{font-family:var(--display);font-size:14px;font-weight:500;color:var(--muted);margin:0}
+
+  .entry{margin-bottom:30px;max-width:64ch}
+  .entry p{margin:8px 0 0}
+
+  .pubs{list-style:none;margin:0;padding:0}
+  .pubs li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:0 8px;margin-bottom:20px;max-width:68ch;line-height:1.5}
+  .key{font-family:var(--display);font-size:14px;font-weight:600;color:var(--muted);padding-top:3px}
+  .t{font-weight:600}
+  .v{color:var(--muted);font-style:italic}
+  .pubs strong{font-weight:700}
+  .plain{margin:0;padding-left:1.1em;max-width:68ch}
+  .plain li{margin-bottom:8px}
+
+  .timeline{list-style:none;margin:0;padding:0}
+  .timeline > li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 28px;padding:0 0 30px;margin-left:5px;border-left:1px solid var(--line);padding-left:26px;position:relative}
+  .timeline > li::before{content:"";position:absolute;left:-5px;top:9px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
+  .timeline > li:last-child{border-left-color:transparent}
+  .when{font-family:var(--display);font-size:14px;font-weight:500;color:var(--muted);padding-top:5px}
+  .timeline p{margin:6px 0 0}
+  .timeline ul{margin:8px 0 0;padding-left:1.1em}
+  .timeline ul li{margin-bottom:2px}
+
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:36px}
+  .cols ul{margin:0;padding-left:1.1em}
+  .cols li{margin-bottom:8px}
+  dl.skills{margin:0;max-width:68ch}
+  dl.skills div{display:grid;grid-template-columns:130px minmax(0,1fr);gap:0 24px;margin-bottom:12px}
+  dl.skills dt{font-family:var(--display);font-size:15px;font-weight:600;color:var(--muted);padding-top:2px}
+  dl.skills dd{margin:0}
+
+  footer{margin-top:72px;padding:28px 0 56px;border-top:1px solid var(--line);font-family:var(--display);font-size:14px;color:var(--muted)}
+
+  @media (max-width:900px){
+    .layout{display:block;padding:0 20px}
+    .rail{position:static;padding:36px 0 8px}
+    .role{margin-bottom:20px}
+    .rail nav ul{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:20px}
+    .rail nav a{border-left:0;padding:8px 0;border-bottom:2px solid transparent}
+    .rail nav a[aria-current]{border-bottom-color:var(--accent)}
+    .contact{display:flex;flex-wrap:wrap;gap:4px 18px}
+    main{padding-top:28px}
+  }
+  @media (max-width:620px){
+    body{font-size:17px}
+    #loco{aspect-ratio:4/3}
+    .timeline > li{grid-template-columns:minmax(0,1fr);gap:0}
+    .when{padding:0 0 2px}
+    dl.skills div{grid-template-columns:minmax(0,1fr);gap:0}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  @media print{
+    body{background:#fff;color:#000;font-size:11pt}
+    .demo,.rail nav,.skip{display:none}
+    .layout{display:block}
+    .rail{position:static;padding:0 0 12px}
+    section{margin-top:24px;padding-top:12px;break-inside:avoid-page}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="layout">
+  <header class="rail">
+    <h1 class="name">Moloud Nasiri</h1>
+    <p class="role">Researcher and educator in human-centered computing, mixed reality, and AI</p>
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#research">Research</a></li>
+        <li><a href="#publications">Publications</a></li>
+        <li><a href="#positions">Positions and teaching</a></li>
+        <li><a href="#education">Education</a></li>
+        <li><a href="#service">Service and mentoring</a></li>
+        <li><a href="#skills">Skills</a></li>
+      </ul>
+    </nav>
+    <ul class="contact">
+      <li><a href="mailto:moloud.nasiri@converse.edu">Email</a></li>
+      <li><a href="https://www.linkedin.com/" target="_blank" rel="noopener">LinkedIn</a></li>
+      <li><a href="https://arxiv.org/abs/2609.27041" target="_blank" rel="noopener">arXiv</a></li>
+    </ul>
+  </header>
+
+  <main id="main">
+    <section class="intro">
+      <p class="lead">I study how people move through virtual worlds, and how large language models reason about math.</p>
+      <p>I earned my Ph.D. in Human-Centered Computing at Clemson University in 2023. My work covers VR locomotion and navigation, gait, perception, and tangible interfaces. More recently it has included research on LLMs. I have taught computer science at Converse University and Florida Polytechnic University.</p>
+
+      <figure class="demo">
+        <div class="seg-group" role="group" aria-label="Locomotion method">
+          <button type="button" class="seg" data-mode="joystick" aria-pressed="true">Joystick</button>
+          <button type="button" class="seg" data-mode="teleport" aria-pressed="false">Teleportation</button>
+        </div>
+        <canvas id="loco" role="img" aria-label="Top-down animation of a viewpoint moving between five places."></canvas>
+        <figcaption id="loco-cap"></figcaption>
+      </figure>
+    </section>
+
+    <section id="research">
+      <h2>Research</h2>
+
+      <div class="entry">
+        <h3>Mathematical reasoning and transfer in large language models</h3>
+        <p>How LLM reasoning and transfer in math are organized by problem-solving approach rather than by topic. A manuscript is under review at ICLR 2027, and the preprint is on arXiv.</p>
+        <p class="meta">2026, collaborative research</p>
+      </div>
+
+      <div class="entry">
+        <h3>VR locomotion, navigation, gait, and perception</h3>
+        <p>I built VR environments in Unity and ran user studies with HTC Vive and Oculus Quest headsets. I compared joystick and teleportation locomotion over four weeks, and studied how prior VR experience relates to walking in real and virtual environments. I also studied visual cues for perceiving pivot-door rotation axes, sensory channels in near-field size perception, and visual feedback in a virtual basketball-shooting task.</p>
+        <p class="meta">2019 to 2023, Virtual Environments Lab, Clemson University</p>
+      </div>
+
+      <div class="entry">
+        <h3>Tangible and interactive systems</h3>
+        <p>I modeled and fabricated physical prototypes, including 3D printing on fabric and laser cutting. I designed Enodia, a highly reconfigurable instrument for collaborative engagement with screen-mediated content.</p>
+        <p class="meta">2017 to 2019, Tangible Visualization Lab, Clemson University</p>
+      </div>
+
+      <div class="entry">
+        <h3>Computer engineering and nanoelectronics</h3>
+        <p>I designed a ternary serial adder and a flash analog-to-digital converter from carbon nanotube field-effect transistors, using VHDL, Verilog, and HSPICE simulation.</p>
+        <p class="meta">2013 to 2015, Nanotechnology and Quantum Computing Lab, Beheshti University</p>
+      </div>
+    </section>
+
+    <section id="publications">
+      <h2>Publications</h2>
+
+      <h3 class="sub">Preprint and under review</h3>
+      <ol class="pubs">
+        <li><span class="key">P1</span><span><span class="t">Math reasoning in LLMs is organized by approach, not topic.</span><br>Goudarzi, S., Zamanifard, S., and <strong>Nasiri, M.</strong> (2026).<br><span class="v"><a href="https://arxiv.org/abs/2609.27041" target="_blank" rel="noopener">arXiv:2609.27041</a> [cs.AI]</span></span></li>
+        <li><span class="key">S1</span><span><span class="t">Mathematical transfer in LLMs follows reasoning approach more than topic.</span><br>Goudarzi, S., Zamanifard, S., Haeri, S. A., and <strong>Nasiri, M.</strong> (2026).<br><span class="v">Under review at ICLR 2027.</span></span></li>
+      </ol>
+
+      <h3 class="sub">Journal papers</h3>
+      <ol class="pubs">
+        <li><span class="key">J1</span><span><span class="t">Longitudinal impact of joystick and teleportation locomotion methods on spatial memory in virtual reality and real-world gait after exiting virtual reality.</span><br><strong>Nasiri, M.</strong>, Nasiry, O., and Robb, A. (2025).<br><span class="v">International Journal of Human–Computer Interaction, 1–22.</span></span></li>
+        <li><span class="key">J2</span><span><span class="t">Changes in navigation over time: A comparison of teleportation and joystick-based locomotion.</span><br><strong>Nasiri, M.</strong>, Robb, A., Porter, J., and Kohm, K. (2023).<br><span class="v">ACM Transactions on Applied Perception, 20(4), 1–16.</span></span></li>
+        <li><span class="key">J3</span><span><span class="t">Effect of texture on the perception of the axis of rotation of pivot doors.</span><br>Raveendranath, B., Pagano, C., <strong>Nasiri, M.</strong>, and Babu, S. B. (2021).<br><span class="v">Journal of Vision, 21(9), 2405.</span></span></li>
+        <li><span class="key">J4</span><span><span class="t">An efficient ternary serial adder based on carbon nanotube FETs.</span><br>Moaiyeri, M. H., <strong>Nasiri, M.</strong>, and Khastoo, N. (2016).<br><span class="v">Engineering Science and Technology, an International Journal, 19(1), 271–278.</span></span></li>
+        <li><span class="key">J5</span><span><span class="t">An efficient analog-to-digital converter based on carbon nanotube FETs.</span><br>Moaiyeri, M. H., Khastoo, N., <strong>Nasiri, M.</strong>, Navi, K., and Bagherzadeh, N. (2016).<br><span class="v">Journal of Low Power Electronics, 12(2), 150–157.</span></span></li>
+      </ol>
+
+      <h3 class="sub">Conference papers</h3>
+      <ol class="pubs">
+        <li><span class="key">C1</span><span><span class="t">Gait differences in the real world and virtual reality: The effect of prior virtual reality experience.</span><br><strong>Nasiri, M.</strong>, Anaraky, R. G., Babu, S. B., and Robb, A. (2022).<br><span class="v">IEEE International Symposium on Mixed and Augmented Reality (ISMAR), Singapore.</span></span></li>
+        <li><span class="key">C2</span><span><span class="t">Gait differences in the real world and virtual reality: The effect of prior virtual reality experience.</span><br><strong>Nasiri, M.</strong> (2021).<br><span class="v">IEEE Conference on Virtual Reality and 3D User Interfaces (VR), Lisbon, Portugal.</span></span></li>
+        <li><span class="key">C3</span><span><span class="t">Empirically evaluating the effects of perceptual information channels on size perception of tangibles in near-field virtual reality.</span><br>Siqueira, A. G., Venkatakrishnan, R., Venkatakrishnan, R., Bhargava, A., Lucaites, K., Solini, H., <strong>Nasiri, M.</strong>, Robb, A., Pagano, C., Ullmer, B., and Babu, S. B. (2021).<br><span class="v">IEEE Conference on Virtual Reality and 3D User Interfaces (VR), Lisbon, Portugal.</span></span></li>
+        <li><span class="key">C4</span><span><span class="t">Effect of priming on smart home privacy preferences.</span><br>Anaraky, R. G., Bahirat, P., <strong>Nasiri, M.</strong>, Page, X., Knijnenburg, B. P., and Duchowski, A. T. (2020).<br><span class="v">USENIX Symposium on Usable Privacy and Security (SOUPS), Boston, MA.</span></span></li>
+        <li><span class="key">C5</span><span><span class="t">The communication die.</span><br><strong>Nasiri, M.</strong> and Ullmer, B. (2019).<br><span class="v">Graduate Research and Discovery Symposium (GRADS), Clemson, SC.</span></span></li>
+      </ol>
+
+      <h3 class="sub">Dissertation</h3>
+      <ol class="pubs">
+        <li><span class="key">D1</span><span><span class="t">The effect of prior virtual reality experience on locomotion and navigation in virtual environments.</span><br><strong>Nasiri, M.</strong> (2023).<br><span class="v">Doctoral dissertation, Clemson University.</span></span></li>
+      </ol>
+
+      <h3 class="sub">Posters and presentations</h3>
+      <ul class="plain">
+        <li>Changes in navigation over time: A comparison of teleportation and joystick-based locomotion. ACM Symposium on Applied Perception (SAP), Los Angeles, CA, August 2023.</li>
+        <li>Gait differences in the real world and virtual reality: The effect of prior virtual reality experience. IEEE ISMAR, Singapore, October 2022.</li>
+        <li>The effect of prior virtual reality experience on walking in IVEs. IEEE VR, Lisbon, Portugal, March 2021.</li>
+        <li>Gait differences in the real world and virtual reality: The effect of prior virtual reality experience. ACM Richard Tapia Celebration of Diversity in Computing, virtual, September 2020.</li>
+        <li>The communication die. GRADS, Clemson, SC, November 2018.</li>
+      </ul>
+    </section>
+
+    <section id="positions">
+      <h2>Positions and teaching</h2>
+      <ol class="timeline">
+        <li>
+          <div class="when">Aug 2024 to Aug 2026</div>
+          <div>
+            <h3>Assistant Professor</h3>
+            <p class="meta">Department of Mathematics and Computer Science, Converse University, Spartanburg, SC</p>
+            <ul>
+              <li>CSC 201 Python Programming</li>
+              <li>CSC 202 Data Structures</li>
+              <li>CSC 203 Algorithm Design</li>
+              <li>CSC 208 Data for Business</li>
+              <li>CSC 235 Web Applications I</li>
+              <li>CSC 335 Web Applications II</li>
+              <li>CSC 400 Special Topics: Human-Computer Interaction</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="when">Aug 2023 to Jul 2024</div>
+          <div>
+            <h3>Visiting Assistant Professor</h3>
+            <p class="meta">Department of Computer Science, Florida Polytechnic University, Lakeland, FL</p>
+            <ul>
+              <li>CAP 4630 Artificial Intelligence</li>
+              <li>COP 3337 Object-Oriented Programming</li>
+              <li>COP 4610 Operating Systems</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="when">Aug 2016 to May 2023</div>
+          <div>
+            <h3>Graduate Teaching and Research Assistant</h3>
+            <p class="meta">School of Computing, Clemson University, Clemson, SC</p>
+            <ul>
+              <li>HCC 8310 Fundamentals of HCC</li>
+              <li>CPSC 2070 Discrete Structures for Computing</li>
+              <li>CPSC 4430/6340 Machine Learning: Implementation and Evaluation</li>
+              <li>HCC 4520/6520 Tangible and Embodied Interaction</li>
+              <li>C Programming Laboratory, as Graduate Lab Assistant (2016 to 2019)</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <div class="when">Dec 2018 to Dec 2019</div>
+          <div>
+            <h3>Writing Across the Curriculum Graduate Fellow</h3>
+            <p class="meta">Pearce Center for Professional Communication, Clemson University</p>
+          </div>
+        </li>
+        <li>
+          <div class="when">Sep 2015 to Aug 2016</div>
+          <div>
+            <h3>Lecturer</h3>
+            <p class="meta">Department of Electrical and Computer Engineering, Taha Institute of Higher Education, Tehran, Iran</p>
+            <ul>
+              <li>C Programming</li>
+              <li>Computer Architecture</li>
+              <li>Logic Circuits</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <ol class="timeline">
+        <li>
+          <div class="when">Jan 2019 to Aug 2023</div>
+          <div>
+            <h3>Ph.D. in Human-Centered Computing</h3>
+            <p class="meta">Clemson University</p>
+            <p>Dissertation: <em>The Effect of Prior Virtual Reality Experience on Locomotion and Navigation in Virtual Environments</em></p>
+          </div>
+        </li>
+        <li>
+          <div class="when">Aug 2018 to May 2020</div>
+          <div>
+            <h3>Certificate in Engineering and Science Education</h3>
+            <p class="meta">Clemson University</p>
+          </div>
+        </li>
+        <li>
+          <div class="when">Aug 2016 to Dec 2019</div>
+          <div>
+            <h3>M.S. in Computer Science</h3>
+            <p class="meta">Clemson University</p>
+          </div>
+        </li>
+        <li>
+          <div class="when">Dec 2012 to May 2014</div>
+          <div>
+            <h3>M.S. in Computer Engineering, Computer Architecture</h3>
+            <p class="meta">Qazvin University, Iran</p>
+          </div>
+        </li>
+        <li>
+          <div class="when">Sep 2006 to Dec 2010</div>
+          <div>
+            <h3>B.S. in Computer Engineering</h3>
+            <p class="meta">Tehran Azad University, Iran</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="service">
+      <h2>Service and mentoring</h2>
+      <div class="cols">
+        <div>
+          <h3>Institutional service</h3>
+          <ul>
+            <li>Member, Curricular Programs Committee, Converse University, 2025 to present</li>
+            <li>Senator, Graduate Student Government, Clemson, 2020 to 2022</li>
+            <li>Member, Graduate Travel Grant Selection Committee, Clemson, 2020 to 2021</li>
+            <li>CZAR, VE Lab Organization and Safety, Clemson, 2018 to 2021</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Affiliations</h3>
+          <ul>
+            <li>ACM Committee on Women in Computing (ACM-W), 2019 to 2021</li>
+            <li>International Students Organization, Clemson, 2017 to 2020</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Mentoring</h3>
+          <ul>
+            <li>Directed undergraduates in the HCC-TangViz Lab in 3D modeling, prototyping, 3D printing, and laser cutting, 2017 to 2019</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <dl class="skills">
+        <div><dt>VR development</dt><dd>Unity, Rhino, SketchUp, 3ds Max</dd></div>
+        <div><dt>Programming</dt><dd>C, C++, C#, Python, R, HTML, CSS, VHDL, Verilog</dd></div>
+        <div><dt>Research</dt><dd>Qualitative and quantitative research, study design, statistics, technical writing</dd></div>
+        <div><dt>Fabrication</dt><dd>3D printing, laser cutting and engraving</dd></div>
+      </dl>
+    </section>
+
+    <footer>CV last updated October 2026. Contact: <a href="mailto:moloud.nasiri@converse.edu">moloud.nasiri@converse.edu</a></footer>
+  </main>
+</div>
+
+<script>
+/* Locomotion demo: a viewpoint visits five places by joystick (continuous) or teleportation (jumps). */
+(function () {
+  var cv = document.getElementById('loco');
+  if (!cv || !cv.getContext) return;
+  var ctx = cv.getContext('2d');
+  var cap = document.getElementById('loco-cap');
+  var btns = Array.prototype.slice.call(document.querySelectorAll('.seg'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var dark = window.matchMedia('(prefers-color-scheme: dark)');
+
+  var P = [[.08,.74],[.27,.27],[.5,.7],[.73,.26],[.92,.64]];
+  var route = [0,1,2,3,4,3,2,1];
+  var TEXT = {
+    joystick: 'Joystick locomotion slides the viewpoint along the path, so the space between places is seen. I compared it with teleportation over four weeks to see how navigation changed.',
+    teleport: 'Teleportation jumps the viewpoint to a chosen spot, so the space in between is skipped. I compared it with joystick locomotion over four weeks to see how navigation changed.'
+  };
+  var LABEL = {
+    joystick: 'Top-down animation of a viewpoint sliding continuously between five places, leaving a solid trail.',
+    teleport: 'Top-down animation of a viewpoint aiming, then jumping between five places, leaving dashed jump lines.'
+  };
+
+  var W = 0, H = 0, C = {};
+  var mode = 'joystick', seg = 0, t = 0, pos = P[0].slice(), alpha = 1, aim = 0;
+  var head = 0, trail = [], ring = null, jumped = false, clock = 0, last = 0;
+  var A = P[0], B = P[1], raf = 0, visible = true;
+
+  function readColors() {
+    var s = getComputedStyle(document.documentElement);
+    ['--surface','--ink','--muted','--line','--accent','--waypoint'].forEach(function (k) {
+      C[k] = s.getPropertyValue(k).trim();
+    });
+  }
+  function resize() {
+    var r = cv.getBoundingClientRect();
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    if (reduce.matches) drawStatic();
+  }
+  function ends() {
+    A = P[route[seg % route.length]];
+    B = P[route[(seg + 1) % route.length]];
+  }
+  function nextPoint() { return P[route[(seg + 2) % route.length]]; }
+  function px(p) { return [p[0] * W, p[1] * H]; }
+  function headingTo(from, to) {
+    return Math.atan2((to[1] - from[1]) * H, (to[0] - from[0]) * W);
+  }
+
+  function reset() {
+    seg = 0; t = 0; pos = P[0].slice(); alpha = 1; aim = 0; trail = []; ring = null; jumped = false;
+    ends(); head = headingTo(A, B);
+  }
+
+  function step(dt, now) {
+    clock = now;
+    ends();
+    if (mode === 'joystick') {
+      var len = Math.hypot((B[0] - A[0]) * W, (B[1] - A[1]) * H) || 1;
+      var prev = pos.slice();
+      t += dt * W * 0.12 / len;
+      if (t >= 1) { t -= 1; seg++; ends(); }
+      pos = [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t];
+      alpha = 1; aim = 0;
+      head = headingTo(pos, B);
+      trail.push({ a: prev, b: pos.slice(), born: now, j: false });
+    } else {
+      t += dt / 2.4;
+      if (t >= 1) { t -= 1; seg++; jumped = false; ends(); }
+      var target = B;
+      if (t < 0.62) { aim = t / 0.62; pos = A; alpha = 1; }
+      else if (t < 0.72) {
+        var k = (t - 0.62) / 0.1; aim = 1;
+        if (k < 0.5) { pos = A; alpha = 1 - k * 2; }
+        else {
+          if (!jumped) { jumped = true; trail.push({ a: A, b: B, born: now, j: true }); ring = { p: B, born: now }; }
+          pos = B; alpha = (k - 0.5) * 2;
+        }
+      } else { pos = B; alpha = 1; aim = 0; target = nextPoint(); }
+      head = headingTo(pos, target);
+    }
+    trail = trail.filter(function (e) { return now - e.born < 6; });
+  }
+
+  function draw(now) {
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = C['--surface']; ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = C['--line'];
+    for (var x = 14; x < W; x += 28) for (var y = 14; y < H; y += 28) ctx.fillRect(x, y, 1.5, 1.5);
+
+    ctx.strokeStyle = C['--line']; ctx.lineWidth = 1; ctx.setLineDash([]);
+    ctx.beginPath();
+    for (var i = 0; i < P.length; i++) { var q = px(P[i]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }
+    ctx.stroke();
+
+    for (var n = 0; n < P.length; n++) {
+      var w = px(P[n]);
+      ctx.beginPath(); ctx.arc(w[0], w[1], 7, 0, Math.PI * 2);
+      ctx.fillStyle = C['--surface']; ctx.fill();
+      ctx.strokeStyle = C['--muted']; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    ctx.lineCap = 'round';
+    trail.forEach(function (e) {
+      var al = Math.max(0, 1 - (now - e.born) / 6);
+      var a = px(e.a), b = px(e.b);
+      ctx.globalAlpha = al * (e.j ? 1 : .9);
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+      if (e.j) { ctx.setLineDash([3, 8]); ctx.strokeStyle = C['--waypoint']; ctx.lineWidth = 2.5; }
+      else { ctx.setLineDash([]); ctx.strokeStyle = C['--accent']; ctx.lineWidth = 3; }
+      ctx.stroke();
+    });
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+    if (mode === 'teleport' && !reduce.matches && aim > 0 && t < 0.72) {
+      var a0 = px(A), b0 = px(B), cx = (a0[0] + b0[0]) / 2, cy = Math.min(a0[1], b0[1]) - H * 0.14;
+      ctx.strokeStyle = C['--waypoint']; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(a0[0], a0[1]);
+      var steps = 28;
+      for (var s = 1; s <= steps * aim; s++) {
+        var u = s / steps, mu = 1 - u;
+        ctx.lineTo(mu * mu * a0[0] + 2 * mu * u * cx + u * u * b0[0], mu * mu * a0[1] + 2 * mu * u * cy + u * u * b0[1]);
+      }
+      ctx.stroke();
+      ctx.beginPath(); ctx.arc(b0[0], b0[1], 11 * aim, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    if (ring) {
+      var rk = (now - ring.born) / 0.8;
+      if (rk >= 1) ring = null;
+      else {
+        var rp = px(ring.p);
+        ctx.globalAlpha = 1 - rk; ctx.strokeStyle = C['--waypoint']; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(rp[0], rp[1], 9 + 26 * rk, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    var p = px(pos);
+    ctx.globalAlpha = alpha * 0.2; ctx.fillStyle = C['--accent'];
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.arc(p[0], p[1], 38, head - 0.6, head + 0.6); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = alpha;
+    ctx.beginPath(); ctx.arc(p[0], p[1], 7, 0, Math.PI * 2);
+    ctx.fillStyle = C['--accent']; ctx.fill();
+    ctx.strokeStyle = C['--surface']; ctx.lineWidth = 2; ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawStatic() {
+    reset(); clock = 0; trail = [];
+    for (var i = 0; i < 4; i++) trail.push({ a: P[i], b: P[i + 1], born: 0, j: mode === 'teleport' });
+    draw(0);
+  }
+
+  function frame(ts) {
+    var now = ts / 1000;
+    if (!last) last = now;
+    var dt = Math.min(now - last, 0.05); last = now;
+    step(dt, now); draw(now);
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (!raf && visible && !document.hidden && !reduce.matches) { last = 0; raf = requestAnimationFrame(frame); } }
+  function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+  function setMode(m) {
+    mode = m;
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
+    cap.textContent = TEXT[m];
+    cv.setAttribute('aria-label', LABEL[m]);
+    reset();
+    if (reduce.matches) drawStatic();
+  }
+
+  btns.forEach(function (b) { b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); }); });
+  window.addEventListener('resize', resize);
+  document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+  var rd = function () { readColors(); if (reduce.matches) drawStatic(); };
+  if (dark.addEventListener) dark.addEventListener('change', rd);
+  if (reduce.addEventListener) reduce.addEventListener('change', function () { stop(); if (reduce.matches) drawStatic(); else start(); });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { visible = es[0].isIntersecting; visible ? start() : stop(); }).observe(cv);
+  }
+
+  readColors(); resize(); setMode('joystick'); start();
+})();
+
+/* Scroll-spy for the section nav */
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail nav a'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting && byId[e.target.id]) {
+        links.forEach(function (l) { l.removeAttribute('aria-current'); });
+        byId[e.target.id].setAttribute('aria-current', 'true');
+      }
+    });
+  }, { rootMargin: '-15% 0px -75% 0px' });
+  document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
